@@ -290,3 +290,29 @@ def test_calculator_operation_unexpected_error():
                 calc.perform_operation("5", "3")
             
             assert "Operation failed: Unexpected error" in str(exc_info.value)
+
+
+def test_calculator_load_empty_history_file():
+    """Test loading an empty history CSV file."""
+    from app.calculator import Calculator
+    from app.calculator_config import CalculatorConfig
+    from pathlib import Path
+    import tempfile
+    import pandas as pd
+    
+    with tempfile.TemporaryDirectory() as tmpdir:
+        config = CalculatorConfig(base_dir=Path(tmpdir))
+        
+        # Create the history directory first
+        config.history_dir.mkdir(parents=True, exist_ok=True)
+        history_file = config.history_file
+        
+        # Create an empty CSV with just headers
+        empty_df = pd.DataFrame(columns=['operation', 'operand1', 'operand2', 'result', 'timestamp'])
+        empty_df.to_csv(history_file, index=False)
+        
+        # This should trigger line 305
+        calc = Calculator(config)
+        
+        # History should be empty
+        assert calc.history == []
