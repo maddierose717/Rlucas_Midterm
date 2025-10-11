@@ -223,3 +223,38 @@ def test_calculator_logging_setup_failure():
                 calc = Calculator(config)
             
             assert "Logging setup failed" in str(exc_info.value)
+
+
+
+def test_calculator_history_max_size():
+    """Test that history removes oldest entry when max size exceeded."""
+    from app.calculator import Calculator
+    from app.calculator_config import CalculatorConfig
+    from app.operations import OperationFactory
+    from pathlib import Path
+    from decimal import Decimal
+    import tempfile
+    from unittest.mock import patch
+    
+    with tempfile.TemporaryDirectory() as tmpdir:
+        # Create config with small max_history_size
+        config = CalculatorConfig(base_dir=Path(tmpdir))
+        config.max_history_size = 2  # Set small limit
+        
+        # Prevent loading existing history
+        with patch.object(Calculator, 'load_history'):
+            calc = Calculator(config)
+        
+        # Add operations to exceed limit
+        operation = OperationFactory.create_operation('add')
+        calc.set_operation(operation)
+        
+        calc.perform_operation("1", "1")  # First calculation
+        calc.perform_operation("2", "2")  # Second calculation
+        calc.perform_operation("3", "3")  # Third - should trigger pop
+        
+        # Should only have 2 items (oldest removed)
+        assert len(calc.history) == 2
+        # First calculation should be removed
+        assert calc.history[0].operand1 == Decimal("2")
+        assert calc.history[1].operand1 == Decimal("3")
