@@ -201,3 +201,25 @@ def test_calculator_init_with_load_history_failure():
             # Calculator should still initialize despite load failure
             assert calc is not None
             assert calc.history == []
+
+def test_calculator_logging_setup_failure():
+    """Test calculator when logging setup fails."""
+    from app.calculator import Calculator
+    from app.calculator_config import CalculatorConfig
+    from unittest.mock import patch
+    from pathlib import Path
+    import tempfile
+    import pytest
+    
+    with tempfile.TemporaryDirectory() as tmpdir:
+        config = CalculatorConfig(base_dir=Path(tmpdir))
+        
+        # Make logging.basicConfig raise an exception
+        with patch('logging.basicConfig') as mock_logging:
+            mock_logging.side_effect = Exception("Logging setup failed")
+            
+            # This should trigger lines 103-106 and re-raise
+            with pytest.raises(Exception) as exc_info:
+                calc = Calculator(config)
+            
+            assert "Logging setup failed" in str(exc_info.value)
