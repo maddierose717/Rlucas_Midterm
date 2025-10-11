@@ -11,7 +11,7 @@ from app.history import AutoSaveObserver, LoggingObserver
 from app.operations import OperationFactory
 
 
-def calculator_repl(): #no prama: no cover
+def calculator_repl(): # pragma: no cover
     """
     Command-line interface for the calculator.
 
