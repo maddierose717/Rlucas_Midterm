@@ -258,3 +258,35 @@ def test_calculator_history_max_size():
         # First calculation should be removed
         assert calc.history[0].operand1 == Decimal("2")
         assert calc.history[1].operand1 == Decimal("3")
+
+def test_calculator_operation_unexpected_error():
+    """Test calculator handles unexpected errors during operation."""
+    from app.calculator import Calculator
+    from app.calculator_config import CalculatorConfig
+    from app.operations import OperationFactory
+    from app.exceptions import OperationError
+    from pathlib import Path
+    from unittest.mock import patch
+    import tempfile
+    import pytest
+    
+    with tempfile.TemporaryDirectory() as tmpdir:
+        config = CalculatorConfig(base_dir=Path(tmpdir))
+        
+        with patch.object(Calculator, 'load_history'):
+            calc = Calculator(config)
+        
+        # Set up operation
+        operation = OperationFactory.create_operation('add')
+        
+        # Make the operation's execute method raise unexpected error
+        with patch.object(operation, 'execute') as mock_execute:
+            mock_execute.side_effect = RuntimeError("Unexpected error")
+            
+            calc.set_operation(operation)
+            
+            # Should catch and re-raise as OperationError
+            with pytest.raises(OperationError) as exc_info:
+                calc.perform_operation("5", "3")
+            
+            assert "Operation failed: Unexpected error" in str(exc_info.value)
