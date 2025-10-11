@@ -178,3 +178,26 @@ def test_calculator_repl_help(mock_print, mock_input):
 def test_calculator_repl_addition(mock_print, mock_input):
     calculator_repl()
     mock_print.assert_any_call("\nResult: 5")
+
+
+def test_calculator_init_with_load_history_failure():
+    """Test calculator initialization when load_history fails."""
+    from app.calculator import Calculator
+    from app.calculator_config import CalculatorConfig
+    from unittest.mock import patch
+    from pathlib import Path
+    import tempfile
+    
+    with tempfile.TemporaryDirectory() as tmpdir:
+        config = CalculatorConfig(base_dir=Path(tmpdir))
+        
+        # Make load_history raise an exception during init
+        with patch.object(Calculator, 'load_history') as mock_load:
+            mock_load.side_effect = Exception("Failed to load")
+            
+            # This should trigger lines 77-79
+            calc = Calculator(config)
+            
+            # Calculator should still initialize despite load failure
+            assert calc is not None
+            assert calc.history == []
