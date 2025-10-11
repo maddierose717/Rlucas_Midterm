@@ -316,3 +316,20 @@ def test_calculator_load_empty_history_file():
         
         # History should be empty
         assert calc.history == []
+
+def test_calculator_undo_redo_empty_stacks():
+    """Test undo/redo when stacks are empty."""
+    from app.calculator import Calculator
+    from app.calculator_config import CalculatorConfig
+    from pathlib import Path
+    import tempfile
+    
+    with tempfile.TemporaryDirectory() as tmpdir:
+        config = CalculatorConfig(base_dir=Path(tmpdir))
+        calc = Calculator(config)
+        
+        # Test undo with empty stack - line 371
+        assert calc.undo() is False
+        
+        # Test redo with empty stack - line 390
+        assert calc.redo() is False
