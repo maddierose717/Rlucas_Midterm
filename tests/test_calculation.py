@@ -130,3 +130,38 @@ def test_from_dict_result_mismatch(caplog):
 
     # Assert
     assert "Loaded calculation result 10 differs from computed result 5" in caplog.text
+
+
+def test_integer_division():
+    calc = Calculation(operation="IntegerDivision", operand1=Decimal("7"), operand2=Decimal("2"))
+    assert calc.result == Decimal("3")
+
+
+def test_percentage():
+    calc = Calculation(operation="Percentage", operand1=Decimal("25"), operand2=Decimal("100"))
+    assert calc.result == Decimal("25")
+
+
+def test_absolute_difference():
+    calc = Calculation(operation="AbsoluteDifference", operand1=Decimal("5"), operand2=Decimal("8"))
+    assert calc.result == Decimal("3")
+
+
+def test_modulus():
+    calc = Calculation(operation="Modulus", operand1=Decimal("10"), operand2=Decimal("3"))
+    assert calc.result == Decimal("1")
+
+
+def test_modulus_by_zero():
+    with pytest.raises(OperationError):
+        Calculation(operation="Modulus", operand1=Decimal("10"), operand2=Decimal("0"))
+
+
+def test_integer_division_by_zero():
+    with pytest.raises(OperationError):
+        Calculation(operation="IntegerDivision", operand1=Decimal("10"), operand2=Decimal("0"))
+
+
+def test_percentage_with_zero_base():
+    with pytest.raises(OperationError):
+        Calculation(operation="Percentage", operand1=Decimal("10"), operand2=Decimal("0"))
